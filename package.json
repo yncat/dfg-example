@@ -1,0 +1,33 @@
+{
+  "name": "dfg-example",
+  "version": "1.0.0",
+  "description": "Example daifugo game using dfg-simulator",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "tsc && node dist/index.js",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fmt": "prettier -w src/**/*.ts",
+    "lint": "eslint . --ext ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yncat/dfg-example.git"
+  },
+  "author": "Yukio Nozawa <personal@nyanchangames.com> (https://github.com/yncat)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yncat/dfg-example/issues"
+  },
+  "homepage": "https://github.com/yncat/dfg-example#readme",
+  "dependencies": {
+    "@types/node": "^15.12.2",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
+    "dfg-simulator": "^0.1.0",
+    "eslint": "^7.28.0",
+    "prettier": "^2.3.1",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
+  }
+}
