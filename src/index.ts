@@ -1,4 +1,5 @@
 import * as readline from "readline";
+import * as dfg from "dfg-simulator";
 
 async function inputFromUser(message: string): Promise<string> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -41,8 +42,19 @@ async function main(): Promise<void> {
     const pname = await inputFromUser(
       "プレイヤー" + pn + "の名前(省略時は p" + pn + ")"
     );
-    playerNames.push(pname == "" ? "p" + pn : pname);
+    const k = pname == "" ? "p" + pn : pname;
+    playerNames.push(k);
   }
+
+  // プレイヤー識別子を生成する
+  // dfg-simulatorはプレイヤーの名前を直接扱わず、全て識別子で管理する。
+  // 識別子は重複するといけないので、dfg-simulator側の関数で払い出してもらうことで、ユニーク性を保証できる。
+  // 識別子と、実際のプレイヤー名のマッピングは、ライブラリ利用者が行う。
+  const playerIdentifiers = dfg.generateUniqueIdentifiers(numPlayers);
+  for(let i=0;i<numPlayers;i++){
+    console.log(playerNames[i] + ": "+playerIdentifiers[i]);
+  }
+
 }
 
 const rl = readline.createInterface({
