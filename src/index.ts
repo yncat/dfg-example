@@ -152,6 +152,19 @@ async function main(): Promise<void> {
   // ターンはdfg-simulatorが自動で管理してくれます。
   // クライアント側は、game.startActivePlayerControlを呼び出して、次に行動すべきプレイヤーの捜査を開始します。
   // game.startActivePlayerControlが返してくる ActivePlayerControl というオブジェクトを経由して、プレイを決定します。
+  let finishStat = "";
+  while (finishStat === "") {
+    const ctrl = game.startActivePlayerControl();
+    // ctrl.playerIdentifier で、行動中のプレイヤーの識別子を取れる。
+    console.log(pm.id2name(ctrl.playerIdentifier) + "のターン。");
+    console.log(
+      "数値を入力して、出すカードをチェック/チェック解除。kでこのプレイヤーをキック。qでソフトを終了。"
+    );
+    const input = await inputFromUser("行動入力");
+    if (input == "q") {
+      finishStat = "force";
+    }
+  }
 }
 
 const rl = readline.createInterface({
