@@ -58,6 +58,16 @@ class EventReceiver implements dfg.EventReceiver {
   ): void {
     console.log("ランクが変化した!");
   }
+  public onInitialInfoProvided(playerCount: number, deckCount: number): void {
+    console.log("" + playerCount + "人でゲームを始めます。");
+    console.log("" + deckCount + "セットのデッキを使用します。");
+  }
+  public onCardsProvided(identifier: string, providedCount: number): void {
+    const pn = this.idToNameMap.get(identifier);
+    console.log(
+      "" + pn + "に、" + providedCount + "枚のカードが配られました。"
+    );
+  }
 }
 
 async function inputFromUser(message: string): Promise<string> {
@@ -129,8 +139,6 @@ async function main(): Promise<void> {
   // これでやっとゲームが作れます。
   const game = dfg.createGame(playerIdentifiers, evt, rc);
   console.log("ゲームを作成しました。");
-  // game.startInfoから、ゲーム開始時の各種情報を取得できる。これはゲーム中のイベントではないので、コールバックにはしていない。
-  console.log("" + game.startInfo.playerCount + "人でゲームを始めます。");
 }
 
 const rl = readline.createInterface({
