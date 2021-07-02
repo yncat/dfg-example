@@ -180,27 +180,54 @@ async function main(): Promise<void> {
     console.log(pm.id2name(ctrl.playerIdentifier) + "のターン。");
     // ctrl.enumerateHandで、手札のリストを取れる。リストの中身は、 dfg.Card 型。
     const hand = ctrl.enumerateHand();
-    for (let i = 0; i < hand.length; i++) {
-      const cs = card2string(hand[i]);
-      // 手札のインデックスを指定して、そのカードが現在チェックできるか（出せる可能性があるか）を調べることができる。
-      // 結果の型は、dfg.CardSelectableResult。 SELECTABLE か ALREADY_SELECTED か NOT_SELECTABLE のどれか。
-      const checkable =
-        ctrl.checkCardSelectability(i) !=
-        dfg.SelectabilityCheckResult.NOT_SELECTABLE;
-      // 手札のインデックスを指定して、そのカードが現在チェック常態か（出す予定かどうか）を調べることができる。
-      // これは boolean で返ってくる。
-      const checked = ctrl.isCardSelected(i);
-      // チェック可能なカードには番号を表示して、チェックされているカードには「チェック」と表示してみる。
-      const prefix = checkable ? (i + 1).toString() + ": " : "";
-      const suffix = checked ? "(チェック)" : "";
-      console.log(prefix + cs + suffix);
-    }
-    console.log(
-      "数値を入力して、出すカードをチェック/チェック解除。kでこのプレイヤーをキック。qでソフトを終了。"
-    );
-    const input = await inputFromUser("行動入力");
-    if (input == "q") {
-      finishStat = "force";
+    // 行動が決まるまでループ
+    while (true) {
+      for (let i = 0; i < hand.length; i++) {
+        const cs = card2string(hand[i]);
+        // 手札のインデックスを指定して、そのカードが現在チェックできるか（出せる可能性があるか）を調べることができる。
+        // 結果の型は、dfg.CardSelectableResult。 SELECTABLE か ALREADY_SELECTED か NOT_SELECTABLE のどれか。
+        const checkable =
+          ctrl.checkCardSelectability(i) !=
+          dfg.SelectabilityCheckResult.NOT_SELECTABLE;
+        // 手札のインデックスを指定して、そのカードが現在チェック常態か（出す予定かどうか）を調べることができる。
+        // これは boolean で返ってくる。
+        const checked = ctrl.isCardSelected(i);
+        // チェック可能なカードには番号を表示して、チェックされているカードには「チェック」と表示してみる。
+        const prefix = checkable ? (i + 1).toString() + ": " : "";
+        const suffix = checked ? "(チェック)" : "";
+        console.log(prefix + cs + suffix);
+      }
+      console.log(
+        "数値を入力して、出すカードをチェック/チェック解除。kでこのプレイヤーをキック。qでソフトを終了。"
+      );
+      const input = await inputFromUser("行動入力");
+      if (input == "q") {
+        finishStat = "force";
+      }
+      // 数値入力で、カードにチェックをつける
+      let cn = parseInt(input);
+      if (isNaN(cn)) {
+        console.log("数値を読み取れません。");
+        continue;
+      }
+      cn--; //見やすいように１を足して表示していたので
+      // 入力されたインデックス番号のカードがチェックできるかどうか確かめる。
+      // 手札の数より大きいインデックス番号を指定しても、isCardSelectableはエラーを出さない。
+      const selectability = ctrl.checkCardSelectability(cn);
+      if (
+        selectability != dfg.SelectabilityCheckResult.SELECTABLE &&
+        selectability != dfg.SelectabilityCheckResult.ALREADY_SELECTED
+      ) {
+        console.log("その番号のカードはチェックできません。");
+      }
+      // 選択状態に応じて、 selectCard と deselectCard を使い分ける。
+      // toggle はあえて用意していない。明示的にやるほうがいい。
+      // 結果としては、 dfg.CardSelectResult と dfg.CardDeselectResult を返してくるが、無視してもよい。
+      if (!ctrl.isCardSelected(cn)) {
+        ctrl.selectCard(cn);
+      } else {
+        ctrl.deselectCard(cn);
+      }
     }
   }
 }
