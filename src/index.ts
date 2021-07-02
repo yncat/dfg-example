@@ -181,7 +181,19 @@ async function main(): Promise<void> {
     // ctrl.enumerateHandで、手札のリストを取れる。リストの中身は、 dfg.Card 型。
     const hand = ctrl.enumerateHand();
     for (let i = 0; i < hand.length; i++) {
-      console.log(card2string(hand[i]));
+      const cs = card2string(hand[i]);
+      // 手札のインデックスを指定して、そのカードが現在チェックできるか（出せる可能性があるか）を調べることができる。
+      // 結果の型は、dfg.CardSelectableResult。 SELECTABLE か ALREADY_SELECTED か NOT_SELECTABLE のどれか。
+      const checkable =
+        ctrl.checkCardSelectability(i) !=
+        dfg.SelectabilityCheckResult.NOT_SELECTABLE;
+      // 手札のインデックスを指定して、そのカードが現在チェック常態か（出す予定かどうか）を調べることができる。
+      // これは boolean で返ってくる。
+      const checked = ctrl.isCardSelected(i);
+      // チェック可能なカードには番号を表示して、チェックされているカードには「チェック」と表示してみる。
+      const prefix = checkable ? (i + 1).toString() + ": " : "";
+      const suffix = checked ? "(チェック)" : "";
+      console.log(prefix + cs + suffix);
     }
     console.log(
       "数値を入力して、出すカードをチェック/チェック解除。kでこのプレイヤーをキック。qでソフトを終了。"
