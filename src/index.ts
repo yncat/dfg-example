@@ -1,6 +1,27 @@
 import * as readline from "readline";
 import * as dfg from "dfg-simulator";
 
+// 各種返還関連
+const MarkToStringMap = new Map<dfg.CardMark, string>([
+  [dfg.CardMark.CLUBS, "クラブ"],
+  [dfg.CardMark.DIAMONDS, "ダイヤ"],
+  [dfg.CardMark.HEARTS, "ハート"],
+  [dfg.CardMark.SPADES, "スペード"],
+  [dfg.CardMark.JOKER, "ジョーカー"],
+]);
+
+function cardMark2string(mark: dfg.CardMark): string {
+  const ret = MarkToStringMap.get(mark);
+  return ret ? ret : "";
+}
+
+function card2string(card: dfg.Card): string {
+  if (card.isJoker()) {
+    return cardMark2string(card.mark);
+  }
+  return cardMark2string(card.mark) + "の" + card.cardNumber;
+}
+
 // プレイヤーとプレイヤー識別子をマップするオブジェクト
 class PlayerMap {
   idToNameMap: Map<string, string>;
@@ -157,6 +178,11 @@ async function main(): Promise<void> {
     const ctrl = game.startActivePlayerControl();
     // ctrl.playerIdentifier で、行動中のプレイヤーの識別子を取れる。
     console.log(pm.id2name(ctrl.playerIdentifier) + "のターン。");
+    // ctrl.enumerateHandで、手札のリストを取れる。リストの中身は、 dfg.Card 型。
+    const hand = ctrl.enumerateHand();
+    for (let i = 0; i < hand.length; i++) {
+      console.log(card2string(hand[i]));
+    }
     console.log(
       "数値を入力して、出すカードをチェック/チェック解除。kでこのプレイヤーをキック。qでソフトを終了。"
     );

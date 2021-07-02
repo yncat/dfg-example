@@ -24,7 +24,7 @@
     "@types/node": "^15.12.4",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",
-    "dfg-simulator": "^0.1.4",
+    "dfg-simulator": "^0.1.5",
     "eslint": "^7.29.0",
     "prettier": "^2.3.1",
     "ts-node": "^10.0.0",
