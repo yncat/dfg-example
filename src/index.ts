@@ -1,22 +1,30 @@
 import * as readline from "readline";
 import * as dfg from "dfg-simulator";
 
+// プレイヤーとプレイヤー識別子をマップするオブジェクト
+class PlayerMap {
+  idToNameMap: Map<string, string>;
+  constructor(identifiers: string[], names: string[]) {
+    this.idToNameMap = new Map();
+    for (let i = 0; i < names.length; i++) {
+      this.idToNameMap.set(identifiers[i], names[i]);
+    }
+  }
+  public id2name(identifier: string): string {
+    const pn = this.idToNameMap.get(identifier);
+    if (pn === undefined) {
+      return "";
+    }
+    return pn;
+  }
+}
+
 // ゲーム中のイベントをコールバックで受け取るためのオブジェクト。
 // dfg.EventReceiver インターフェイスを満たす必要がある。
 class EventReceiver implements dfg.EventReceiver {
-  playerNames: string[];
-  playerIdentifiers: string[];
-  idToNameMap: Map<string, string>;
-  constructor(playerNames: string[], playerIdentifiers: string[]) {
-    this.playerNames = playerNames;
-    this.playerIdentifiers = playerIdentifiers;
-    this.idToNameMap = new Map();
-    this.buildMap();
-  }
-  private buildMap() {
-    for (let i = 0; i < this.playerNames.length; i++) {
-      this.idToNameMap.set(this.playerIdentifiers[i], this.playerNames[i]);
-    }
+  private playerMap: PlayerMap;
+  constructor(playerMap: PlayerMap) {
+    this.playerMap = playerMap;
   }
   public onNagare(): void {
     console.log("場のカードが流れました。");
@@ -63,7 +71,7 @@ class EventReceiver implements dfg.EventReceiver {
     console.log("" + deckCount + "セットのデッキを使用します。");
   }
   public onCardsProvided(identifier: string, providedCount: number): void {
-    const pn = this.idToNameMap.get(identifier);
+    const pn = this.playerMap.id2name(identifier);
     console.log(
       "" + pn + "に、" + providedCount + "枚のカードが配られました。"
     );
@@ -135,10 +143,15 @@ async function main(): Promise<void> {
   // 各種コールバックを登録します。所々で、プレイヤーの識別子と表示名のマッピングをする必要があるので、その部分はこちらで担保します。
   // コールバックを受け取る関数を1個のクラスにまとめて、 dfg.EventReceiver インターフェイスを満たすように作成しておきます。
   // EventReceiver を実装したオブジェクトを渡すことで、コールバックを登録します。
-  const evt = new EventReceiver(playerNames, playerIdentifiers);
+  const pm = new PlayerMap(playerIdentifiers, playerNames);
+  const evt = new EventReceiver(pm);
   // これでやっとゲームが作れます。
   const game = dfg.createGame(playerIdentifiers, evt, rc);
   console.log("ゲームを作成しました。");
+  // ゲームを作成したら、ターンを順番に回して、プレイヤーに行動を選択させます。
+  // ターンはdfg-simulatorが自動で管理してくれます。
+  // クライアント側は、game.startActivePlayerControlを呼び出して、次に行動すべきプレイヤーの捜査を開始します。
+  // game.startActivePlayerControlが返してくる ActivePlayerControl というオブジェクトを経由して、プレイを決定します。
 }
 
 const rl = readline.createInterface({
