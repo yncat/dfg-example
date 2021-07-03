@@ -281,6 +281,13 @@ async function main(): Promise<void> {
       game.kickPlayerByIdentifier(ctrl.playerIdentifier);
     }
   }
+  // 強制終了でなく、ちゃんとゲーム終了していたら、最終的なプレイヤーの順位を出力して終わる。
+  if (ended) {
+    console.log("最終結果:");
+    game.enumeratePlayerRanks().forEach((v) => {
+      console.log(pm.id2name(v.identifier) + ": " + rankType2string(v.rank));
+    });
+  }
 }
 
 const rl = readline.createInterface({
