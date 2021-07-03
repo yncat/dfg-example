@@ -92,9 +92,7 @@ class EventReceiver implements dfg.EventReceiver {
     console.log("ゲーム終了!");
   }
   public onPlayerKicked(identifier: string): void {
-    console.log(
-      this.playerMap.id2name(identifier) + "プレイヤーがゲームから抜けた!"
-    );
+    console.log(this.playerMap.id2name(identifier) + "がゲームから抜けた!");
   }
   public onPlayerRankChanged(
     identifier: string,
@@ -189,14 +187,20 @@ async function main(): Promise<void> {
   // ターンはdfg-simulatorが自動で管理してくれます。
   // クライアント側は、game.startActivePlayerControlを呼び出して、次に行動すべきプレイヤーの捜査を開始します。
   // game.startActivePlayerControlが返してくる ActivePlayerControl というオブジェクトを経由して、プレイを決定します。
-  let finishStat = "";
-  while (finishStat === "") {
+  let ended = false;
+  while (true) {
+    if (game.isEnded()) {
+      ended = true;
+      break;
+    }
     const ctrl = game.startActivePlayerControl();
     // ctrl.playerIdentifier で、行動中のプレイヤーの識別子を取れる。
     console.log(pm.id2name(ctrl.playerIdentifier) + "のターン。");
     // ctrl.enumerateHandで、手札のリストを取れる。リストの中身は、 dfg.Card 型。
     const hand = ctrl.enumerateHand();
     // 行動が決まるまでループ
+    let quit = false;
+    let kicked = false;
     while (true) {
       for (let i = 0; i < hand.length; i++) {
         const cs = card2string(hand[i]);
@@ -218,7 +222,12 @@ async function main(): Promise<void> {
       );
       const input = await inputFromUser("行動入力");
       if (input == "q") {
-        finishStat = "force";
+        quit = true;
+        break;
+      }
+      if (input == "k") {
+        kicked = true;
+        break;
       }
       // 数値入力で、カードにチェックをつける
       let cn = parseInt(input);
@@ -244,6 +253,16 @@ async function main(): Promise<void> {
       } else {
         ctrl.deselectCard(cn);
       }
+    } // 行動選択
+    // キック、終了、パス、カードを出すのどれかが決定した
+    if (quit) {
+      break;
+    }
+    if (kicked) {
+      // game.kickPlayerByIdentifierで、識別子を指定してプレイヤーをゲームからキックできる。
+      //　オンライン対戦で、接続の落ちたプレイヤーをゲームから閉め出すために利用できる。
+      // 今回はサンプルアプリなので、とりあえず意味もなく使えるようにしておく。
+      game.kickPlayerByIdentifier(ctrl.playerIdentifier);
     }
   }
 }
