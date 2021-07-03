@@ -99,7 +99,23 @@ class EventReceiver implements dfg.EventReceiver {
     before: dfg.RankType,
     after: dfg.RankType
   ): void {
-    console.log("ランクが変化した!");
+    if (before == dfg.RankType.UNDETERMINED) {
+      console.log(
+        this.playerMap.id2name(identifier) +
+          "は、" +
+          rankType2string(after) +
+          "になった!"
+      );
+    } else {
+      console.log(
+        this.playerMap.id2name(identifier) +
+          "は、" +
+          rankType2string(before) +
+          "から" +
+          rankType2string(after) +
+          "になった!"
+      );
+    }
   }
   public onInitialInfoProvided(playerCount: number, deckCount: number): void {
     console.log("" + playerCount + "人でゲームを始めます。");
