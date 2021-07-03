@@ -15,6 +15,20 @@ function cardMark2string(mark: dfg.CardMark): string {
   return ret ? ret : "";
 }
 
+const rankTypeToStringMap = new Map<dfg.RankType, string>([
+  [dfg.RankType.UNDETERMINED, "順位未決定"],
+  [dfg.RankType.DAIFUGO, "大富豪"],
+  [dfg.RankType.FUGO, "富豪"],
+  [dfg.RankType.HEIMIN, "平民"],
+  [dfg.RankType.HINMIN, "貧民"],
+  [dfg.RankType.DAIHINMIN, "大貧民"],
+]);
+
+function rankType2string(rankType: dfg.RankType): string {
+  const ret = rankTypeToStringMap.get(rankType);
+  return ret ? ret : "";
+}
+
 function card2string(card: dfg.Card): string {
   if (card.isJoker()) {
     return cardMark2string(card.mark);
@@ -50,16 +64,16 @@ class EventReceiver implements dfg.EventReceiver {
   public onNagare(): void {
     console.log("場のカードが流れました。");
   }
-  public onAgari(): void {
+  public onAgari(identifier: string): void {
     console.log("あがり!");
   }
-  public onYagiri(): void {
+  public onYagiri(identifier: string): void {
     console.log("八切り!");
   }
-  public onJBack(): void {
+  public onJBack(identifier: string): void {
     console.log("Jバック!");
   }
-  public onKakumei(): void {
+  public onKakumei(identifier: string): void {
     console.log("革命!");
   }
   public onStrengthInversion(strengthInverted: Boolean): void {
@@ -68,17 +82,19 @@ class EventReceiver implements dfg.EventReceiver {
       : "カードの強さが元に戻った!";
     console.log(s);
   }
-  public onDiscard(): void {
+  public onDiscard(identifier: string, discardPair: dfg.DiscardPair): void {
     console.log("カードを捨てた!");
   }
-  public onPass(): void {
+  public onPass(identifier: string): void {
     console.log("パス。");
   }
   public onGameEnd(): void {
     console.log("ゲーム終了!");
   }
-  public onPlayerKicked(): void {
-    console.log("プレイヤーがゲームから抜けた!");
+  public onPlayerKicked(identifier: string): void {
+    console.log(
+      this.playerMap.id2name(identifier) + "プレイヤーがゲームから抜けた!"
+    );
   }
   public onPlayerRankChanged(
     identifier: string,
