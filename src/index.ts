@@ -217,6 +217,8 @@ async function main(): Promise<void> {
     // 行動が決まるまでループ
     let quit = false;
     let kicked = false;
+    let passed = false;
+    let discarded = false;
     while (true) {
       for (let i = 0; i < hand.length; i++) {
         const cs = card2string(hand[i]);
@@ -236,6 +238,12 @@ async function main(): Promise<void> {
       console.log(
         "数値を入力して、出すカードをチェック/チェック解除。kでこのプレイヤーをキック。qでソフトを終了。"
       );
+      // ctrl.countSelectedCards() で、選択しているカードの枚数を調べられる。これを使って、何かカードを選んでいるときは決定の案内を、なにも選んでいないときはパスの案内を出すようにして見る。
+      console.log(
+        ctrl.countSelectedCards() == 0
+          ? "pで、このターンをパス。"
+          : "fで、出すカードを確定。"
+      );
       const input = await inputFromUser("行動入力");
       if (input == "q") {
         quit = true;
@@ -245,6 +253,15 @@ async function main(): Promise<void> {
         kicked = true;
         break;
       }
+      if (input == "p") {
+        if (ctrl.countSelectedCards() > 0) {
+          console.log("パスをするには、カードの選択を解除してください。");
+          continue;
+        }
+        passed = true;
+        break;
+      }
+      // ここまで来たら、数値入力によるカード選択以外ありえない。
       // 数値入力で、カードにチェックをつける
       let cn = parseInt(input);
       if (isNaN(cn)) {
@@ -280,6 +297,14 @@ async function main(): Promise<void> {
       // 今回はサンプルアプリなので、とりあえず意味もなく使えるようにしておく。
       game.kickPlayerByIdentifier(ctrl.playerIdentifier);
     }
+    if (passed) {
+      // ctrl.pass() で、このターンにパスをするということを dfg-simulator に教える。 game.finishActivePlayerControl(ctrl) を呼ぶまで、実際の処理は行われない。
+      ctrl.pass();
+    }
+    // game.finishActivePlayerControl(ctrl) で、 activePlayerControl の制御を dfg-simulator に返し、各種コールバックと副作用を発生させる。
+    // 制御を返したあとは、 ctrl は invalid と見なされ、メソッドを呼び出そうとすると例外が発生するようになる。
+    // 次のターンで、新しく startActivePlayerControl でコントローラを取得し直し、操作し、また返す…という流れを繰り返す。
+    game.finishActivePlayerControl(ctrl);
   }
   // 強制終了でなく、ちゃんとゲーム終了していたら、最終的なプレイヤーの順位を出力して終わる。
   if (ended) {
@@ -294,11 +319,13 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
-void main().then(() => {
-  rl.close();
-}).catch((reason)=>{
-  console.log(reason.stack);
-  console.log(reason);
-  console.log("エラーにより終了しました。");
-  rl.close();
-});
+void main()
+  .then(() => {
+    rl.close();
+  })
+  .catch((reason) => {
+    console.log(reason.stack);
+    console.log(reason);
+    console.log("エラーにより終了しました。");
+    rl.close();
+  });
