@@ -296,4 +296,9 @@ const rl = readline.createInterface({
 });
 void main().then(() => {
   rl.close();
+}).catch((reason)=>{
+  console.log(reason.stack);
+  console.log(reason);
+  console.log("エラーにより終了しました。");
+  rl.close();
 });
