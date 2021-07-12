@@ -86,7 +86,7 @@ class EventReceiver implements dfg.EventReceiver {
     console.log("カードを捨てた!");
   }
   public onPass(identifier: string): void {
-    console.log("パス。");
+    console.log(this.playerMap.id2name(identifier) + "はパス。");
   }
   public onGameEnd(): void {
     console.log("ゲーム終了!");
