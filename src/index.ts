@@ -8,6 +8,7 @@ const MarkToStringMap = new Map<dfg.CardMark, string>([
   [dfg.CardMark.HEARTS, "ハート"],
   [dfg.CardMark.SPADES, "スペード"],
   [dfg.CardMark.JOKER, "ジョーカー"],
+  [dfg.CardMark.WILD, "ジョーカー"],
 ]);
 
 function cardMark2string(mark: dfg.CardMark): string {
@@ -34,6 +35,19 @@ function card2string(card: dfg.Card): string {
     return cardMark2string(card.mark);
   }
   return cardMark2string(card.mark) + "の" + card.cardNumber;
+}
+
+function discardPair2string(discardPair: dfg.DiscardPair): string {
+  return (
+    discardPair.cards
+      .map((c) => {
+        return card2string(c);
+      })
+      .join(", ") +
+    "の" +
+    discardPair.count() +
+    "枚"
+  );
 }
 
 // プレイヤーとプレイヤー識別子をマップするオブジェクト
@@ -83,7 +97,7 @@ class EventReceiver implements dfg.EventReceiver {
     console.log(s);
   }
   public onDiscard(identifier: string, discardPair: dfg.DiscardPair): void {
-    console.log("カードを捨てた!");
+    console.log(this.playerMap.id2name(identifier)+"は、"+discardPair2string(discardPair)+"をプレイ。");
   }
   public onPass(identifier: string): void {
     console.log(this.playerMap.id2name(identifier) + "はパス。");
