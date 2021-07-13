@@ -97,7 +97,12 @@ class EventReceiver implements dfg.EventReceiver {
     console.log(s);
   }
   public onDiscard(identifier: string, discardPair: dfg.DiscardPair): void {
-    console.log(this.playerMap.id2name(identifier)+"は、"+discardPair2string(discardPair)+"をプレイ。");
+    console.log(
+      this.playerMap.id2name(identifier) +
+        "は、" +
+        discardPair2string(discardPair) +
+        "をプレイ。"
+    );
   }
   public onPass(identifier: string): void {
     console.log(this.playerMap.id2name(identifier) + "はパス。");
@@ -275,6 +280,16 @@ async function main(): Promise<void> {
         passed = true;
         break;
       }
+      if (input == "f") {
+        if (ctrl.countSelectedCards() == 0) {
+          console.log(
+            "カードをプレイするには、プレイしたいカードにチェックを付けてください。"
+          );
+          continue;
+        }
+        discarded = true;
+        break;
+      }
       // ここまで来たら、数値入力によるカード選択以外ありえない。
       // 数値入力で、カードにチェックをつける
       let cn = parseInt(input);
@@ -314,6 +329,24 @@ async function main(): Promise<void> {
     if (passed) {
       // ctrl.pass() で、このターンにパスをするということを dfg-simulator に教える。 game.finishActivePlayerControl(ctrl) を呼ぶまで、実際の処理は行われない。
       ctrl.pass();
+    } else {
+      // 選択しているカードにジョーカーが含まれているとき、複数のパターンとして出せることがある。たとえば、5と6とジョーカーなら、4と5と6、5と6と7の2パターンが考えられる。
+      // ctrl.enumerateDiscardPairs() で、現在選択中のカードの組み合わせで、出せるパターンを一覧にできる。
+      // この一覧に2つ以上のパターンが含まれているときは、プレイヤーに選ばせなければいけない。
+      const dps = ctrl.enumerateDiscardPairs();
+      let idx = 0;
+      if (dps.length > 1) {
+        console.log("どのパターンでカードをプレイしますか？");
+        dps.forEach((v, i) => {
+          console.log("" + (i + 1) + ": " + discardPair2string(v));
+        });
+        idx =
+          (await inputNumberFromUser("パターンを数値で選択", 1, dps.length)) -
+          1;
+      }
+      // ctrl.discard(discardPair) で、カードをプレイすることを dfg-simulator に通知する。
+      // インデックス番号ではなく、実際の dfg.discardPair のオブジェクトを指定する。
+      ctrl.discard(dps[idx]);
     }
     // game.finishActivePlayerControl(ctrl) で、 activePlayerControl の制御を dfg-simulator に返し、各種コールバックと副作用を発生させる。
     // 制御を返したあとは、 ctrl は invalid と見なされ、メソッドを呼び出そうとすると例外が発生するようになる。
