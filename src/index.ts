@@ -38,15 +38,14 @@ function card2string(card: dfg.Card): string {
 }
 
 function discardPair2string(discardPair: dfg.DiscardPair): string {
+  const suffix =
+    discardPair.cards.length > 1 ? "の" + discardPair.cards.length + "枚" : "";
   return (
     discardPair.cards
       .map((c) => {
         return card2string(c);
       })
-      .join(", ") +
-    "の" +
-    discardPair.count() +
-    "枚"
+      .join(", ") + suffix
   );
 }
 
