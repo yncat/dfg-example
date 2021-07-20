@@ -256,12 +256,14 @@ async function main(): Promise<void> {
       console.log(
         "数値を入力して、出すカードをチェック/チェック解除。kでこのプレイヤーをキック。qでソフトを終了。"
       );
-      // ctrl.countSelectedCards() で、選択しているカードの枚数を調べられる。これを使って、何かカードを選んでいるときは決定の案内を、なにも選んでいないときはパスの案内を出すようにして見る。
-      console.log(
-        ctrl.countSelectedCards() == 0
-          ? "pで、このターンをパス。"
-          : "fで、出すカードを確定。"
-      );
+      // ctrl.countSelectedCards() で、選択しているカードの枚数を調べられる。これを使って、なにもカードを選んでいないときにパスの案内を出してみる。
+      if (ctrl.countSelectedCards() == 0) {
+        console.log("pで、このターンをパス。");
+      }
+      // ctrl.enumerateDiscardPairs() で、現在選択中のカードの組み合わせで、出せるパターンを一覧にできる。これを使って、出せるカードの組み合わせを選択しているとき、確定の案内を出してみる。
+      if (ctrl.enumerateDiscardPairs().length > 0) {
+        console.log("fで、出すカードを確定。");
+      }
       const input = await inputFromUser("行動入力");
       if (input == "q") {
         quit = true;
@@ -280,10 +282,8 @@ async function main(): Promise<void> {
         break;
       }
       if (input == "f") {
-        if (ctrl.countSelectedCards() == 0) {
-          console.log(
-            "カードをプレイするには、プレイしたいカードにチェックを付けてください。"
-          );
+        if (ctrl.enumerateDiscardPairs().length == 0) {
+          console.log("有効なカードの組み合わせではありません。");
           continue;
         }
         discarded = true;
@@ -300,10 +300,7 @@ async function main(): Promise<void> {
       // 入力されたインデックス番号のカードがチェックできるかどうか確かめる。
       // 手札の数より大きいインデックス番号を指定しても、isCardSelectableはエラーを出さない。
       const selectability = ctrl.checkCardSelectability(cn);
-      if (
-        selectability != dfg.SelectabilityCheckResult.SELECTABLE &&
-        selectability != dfg.SelectabilityCheckResult.ALREADY_SELECTED
-      ) {
+      if (selectability == dfg.SelectabilityCheckResult.NOT_SELECTABLE) {
         console.log("その番号のカードはチェックできません。");
       }
       // 選択状態に応じて、 selectCard と deselectCard を使い分ける。
@@ -330,8 +327,7 @@ async function main(): Promise<void> {
       ctrl.pass();
     } else {
       // 選択しているカードにジョーカーが含まれているとき、複数のパターンとして出せることがある。たとえば、5と6とジョーカーなら、4と5と6、5と6と7の2パターンが考えられる。
-      // ctrl.enumerateDiscardPairs() で、現在選択中のカードの組み合わせで、出せるパターンを一覧にできる。
-      // この一覧に2つ以上のパターンが含まれているときは、プレイヤーに選ばせなければいけない。
+      // 2つ以上のパターンがあるときは、プレイヤーに選ばせなければいけない。
       const dps = ctrl.enumerateDiscardPairs();
       let idx = 0;
       if (dps.length > 1) {
