@@ -322,6 +322,9 @@ async function main(): Promise<void> {
     if (kicked) {
       // game.kickPlayerByIdentifierで、識別子を指定してプレイヤーをゲームからキックできる。
       //　オンライン対戦で、接続の落ちたプレイヤーをゲームから閉め出すために利用できる。
+      // 現在行動中のプレイヤーをキックすることもできる。行動するプレイヤーが変わることもあるので、キックしたあとは必ず activePlayerControl を取得し直すこと。
+      // 現在行動中のプレイヤーをキックしたとしても、 finishActivePlayerControl は呼ばなくて良い。というか、呼んではいけない。
+      // すでに上がっているプレイヤーをキックした場合は、そのプレイヤーより後に上がったプレイヤーたちのランクは自動的に繰り上げされる。なので、このタイミングで、 onPlayerRankChanged が何度か呼ばれたりする。
       // 今回はサンプルアプリなので、とりあえず意味もなく使えるようにしておく。
       game.kickPlayerByIdentifier(ctrl.playerIdentifier);
     }
