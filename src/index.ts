@@ -80,6 +80,9 @@ class EventReceiver implements dfg.EventReceiver {
   public onAgari(identifier: string): void {
     console.log("あがり!");
   }
+  public onForbiddenAgari(identifier: string) {
+    console.log("反則上がり!");
+  }
   public onYagiri(identifier: string): void {
     console.log("八切り!");
   }
