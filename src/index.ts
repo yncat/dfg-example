@@ -98,12 +98,18 @@ class EventReceiver implements dfg.EventReceiver {
       : "カードの強さが元に戻った!";
     console.log(s);
   }
-  public onDiscard(identifier: string, discardPair: dfg.DiscardPair): void {
+  public onDiscard(
+    identifier: string,
+    discardPair: dfg.DiscardPair,
+    remainingHandCount: number
+  ): void {
     console.log(
       this.playerMap.id2name(identifier) +
         "は、" +
         discardPair2string(discardPair) +
-        "をプレイ。"
+        "をプレイ、あと" +
+        remainingHandCount +
+        "枚。"
     );
   }
   public onPass(identifier: string): void {
