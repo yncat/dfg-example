@@ -115,8 +115,35 @@ class EventReceiver implements dfg.EventReceiver {
   public onPass(identifier: string): void {
     console.log(this.playerMap.id2name(identifier) + "はパス。");
   }
-  public onGameEnd(): void {
+  public onGameEnd(result: dfg.Result): void {
     console.log("ゲーム終了!");
+    console.log(
+      "大富豪は、" +
+        this.playerNameStrs(result.getIdentifiersByRank(dfg.RankType.DAIFUGO)) +
+        "。"
+    );
+    console.log(
+      "富豪は、" +
+        this.playerNameStrs(result.getIdentifiersByRank(dfg.RankType.FUGO)) +
+        "。"
+    );
+    console.log(
+      "平民は、" +
+        this.playerNameStrs(result.getIdentifiersByRank(dfg.RankType.HEIMIN)) +
+        "。"
+    );
+    console.log(
+      "貧民は、" +
+        this.playerNameStrs(result.getIdentifiersByRank(dfg.RankType.HINMIN)) +
+        "。"
+    );
+    console.log(
+      "大貧民は、" +
+        this.playerNameStrs(
+          result.getIdentifiersByRank(dfg.RankType.DAIHINMIN)
+        ) +
+        "。"
+    );
   }
   public onPlayerKicked(identifier: string): void {
     console.log(this.playerMap.id2name(identifier) + "がゲームから抜けた!");
@@ -153,6 +180,15 @@ class EventReceiver implements dfg.EventReceiver {
     console.log(
       "" + pn + "に、" + providedCount + "枚のカードが配られました。"
     );
+  }
+
+  private playerNameStrs(identifiers: string[]) {
+    const ret = identifiers
+      .map((v) => {
+        return this.playerMap.id2name(v);
+      })
+      .join("、");
+    return ret === "" ? "該当者なし" : ret;
   }
 }
 
@@ -359,13 +395,6 @@ async function main(): Promise<void> {
     // 制御を返したあとは、 ctrl は invalid と見なされ、メソッドを呼び出そうとすると例外が発生するようになる。
     // 次のターンで、新しく startActivePlayerControl でコントローラを取得し直し、操作し、また返す…という流れを繰り返す。
     game.finishActivePlayerControl(ctrl);
-  }
-  // 強制終了でなく、ちゃんとゲーム終了していたら、最終的なプレイヤーの順位を出力して終わる。
-  if (ended) {
-    console.log("最終結果:");
-    game.enumeratePlayerRanks().forEach((v) => {
-      console.log(pm.id2name(v.identifier) + ": " + rankType2string(v.rank));
-    });
   }
 }
 
